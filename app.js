@@ -3,6 +3,13 @@
 import * as store from './store.js';
 import { filterCards, sortCards, shuffled, SORTS } from './filter.js';
 import {
+  getTheme,
+  setTheme,
+  initTheme,
+  resolvedTheme,
+  subscribe as subscribeTheme,
+} from './theme.js';
+import {
   $,
   toast,
   announce,
@@ -14,6 +21,7 @@ import {
 } from './ui.js';
 
 // ── View state (not persisted, except the sort preference) ────────────
+// The theme preference is persisted too, but theme.js owns it.
 
 const SORT_KEY = 'flashcard.sort.v1';
 
@@ -613,6 +621,36 @@ async function clearAll() {
   toast('All cards deleted');
 }
 
+// ── Theme ─────────────────────────────────────────────────────────────
+// Rendered from a theme.js subscription rather than from renderAll, so that an
+// OS appearance change while the preference is "system" updates the controls
+// too, not just the colours.
+
+function renderTheme() {
+  const dark = resolvedTheme() === 'dark';
+
+  // The header button offers the opposite of what is on screen, so it shows the
+  // sun while dark and the moon while light.
+  const toggle = $('#btn-theme');
+  toggle.querySelector('[data-theme-icon="light"]').classList.toggle('hidden', !dark);
+  toggle.querySelector('[data-theme-icon="dark"]').classList.toggle('hidden', dark);
+  toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+
+  const current = getTheme();
+  for (const btn of document.querySelectorAll('#theme-choice [data-theme]')) {
+    const active = btn.dataset.theme === current;
+    btn.classList.toggle('theme-btn-active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  }
+}
+
+/** Flip to the opposite of what is currently showing, leaving "system" behind. */
+function toggleTheme() {
+  const next = resolvedTheme() === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  announce(next === 'dark' ? 'Dark mode on' : 'Light mode on');
+}
+
 // ── Storage warning ───────────────────────────────────────────────────
 
 function renderStorageWarning() {
@@ -705,10 +743,20 @@ function wireEvents() {
     await handleImportFile(file);
   });
   $('#btn-clear').addEventListener('click', clearAll);
+
+  // Theme: a quick flip in the list header, the full choice in the data view.
+  // Both re-render through the theme.js subscription.
+  $('#btn-theme').addEventListener('click', toggleTheme);
+  for (const btn of document.querySelectorAll('#theme-choice [data-theme]')) {
+    btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+  }
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────
 
+// Subscribe before initTheme so its first apply paints the controls too.
+subscribeTheme(renderTheme);
+initTheme();
 store.load();
 store.subscribe(renderAll);
 wireEvents();
