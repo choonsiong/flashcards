@@ -181,8 +181,8 @@ function renderCardRow(card) {
     'min-w-0 flex-1 whitespace-pre-wrap break-words break-all font-medium leading-snug';
   front.textContent = card.front;
 
-  const chevron = document.createElement('svg');
-  // SVG created via innerHTML on a namespaced element is fiddly; build it directly.
+  // SVG needs createElementNS; a plain createElement('svg') produces an
+  // unrenderable HTML-namespaced element.
   const chevronEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   chevronEl.setAttribute('viewBox', '0 0 20 20');
   chevronEl.setAttribute('fill', 'currentColor');
