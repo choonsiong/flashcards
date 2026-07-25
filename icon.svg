@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Flashcards">
+  <rect width="512" height="512" rx="112" fill="#4f46e5" />
+  <!-- Back card, rotated to suggest a stack -->
+  <rect x="150" y="126" width="220" height="270" rx="28" fill="#ffffff" opacity="0.32"
+        transform="rotate(-9 260 261)" />
+  <!-- Front card -->
+  <rect x="146" y="134" width="220" height="252" rx="28" fill="#ffffff" />
+  <!-- Text lines on the front card -->
+  <rect x="182" y="188" width="148" height="22" rx="11" fill="#4f46e5" />
+  <rect x="182" y="240" width="112" height="16" rx="8" fill="#a5b4fc" />
+  <rect x="182" y="278" width="136" height="16" rx="8" fill="#a5b4fc" />
+  <rect x="182" y="316" width="88" height="16" rx="8" fill="#a5b4fc" />
+</svg>
