@@ -1,0 +1,45 @@
+/* `source(none)` disables Tailwind v4's automatic project scan, which would
+   otherwise pull class names out of prose in README.md and generate unused
+   utilities. Only the files listed below are scanned. */
+@import 'tailwindcss' source(none);
+
+@source '../index.html';
+@source '../app.js';
+@source '../ui.js';
+
+@layer base {
+  /* Stop iOS Safari from zooming in when a form field is focused, and keep
+     long words from overflowing the narrow mobile layout. */
+  input,
+  textarea,
+  select {
+    font-size: 1rem;
+  }
+
+  /* Remove the native clear/decoration on search inputs for a consistent look. */
+  input[type='search']::-webkit-search-decoration,
+  input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Bottom navigation tab */
+  .nav-btn {
+    @apply flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-medium
+           text-slate-500 transition active:scale-95 dark:text-slate-400;
+  }
+
+  .nav-btn-active {
+    @apply text-indigo-600 dark:text-indigo-400;
+  }
+}

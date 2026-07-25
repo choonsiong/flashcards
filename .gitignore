@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+*.log
+
+# Exported card data — personal, keep it out of the repo.
+flashcards-*.json

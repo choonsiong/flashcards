@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Flashcards</title>
+    <meta name="description" content="A simple offline flashcard app for remembering things." />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Flashcards" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-180.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <!-- Screen-reader announcements for actions that have no visual focus change. -->
+    <p id="live-region" class="sr-only" role="status" aria-live="polite"></p>
+
+    <div class="mx-auto flex min-h-full w-full max-w-2xl flex-col">
+      <!-- ── Storage warning ─────────────────────────────────────────── -->
+      <div
+        id="storage-warning"
+        class="hidden border-b border-amber-300 bg-amber-100 px-4 py-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/60 dark:text-amber-200"
+        role="alert"
+      >
+        <span id="storage-warning-text"></span>
+      </div>
+
+      <!-- ══ LIST VIEW ═══════════════════════════════════════════════ -->
+      <main id="view-list" class="flex-1 pb-28">
+        <header class="sticky top-0 z-10 border-b border-slate-200 bg-slate-50/90 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+          <div class="flex items-baseline justify-between gap-3">
+            <h1 class="text-2xl font-semibold tracking-tight">Flashcards</h1>
+            <span id="card-count" class="shrink-0 text-sm text-slate-500 dark:text-slate-400"></span>
+          </div>
+
+          <div class="mt-3 flex gap-2">
+            <div class="relative flex-1">
+              <svg class="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.436 9.796l3.384 3.384a.75.75 0 1 0 1.06-1.06l-3.383-3.385A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd" />
+              </svg>
+              <input
+                id="search"
+                type="search"
+                inputmode="search"
+                autocomplete="off"
+                placeholder="Search cards…"
+                aria-label="Search cards"
+                class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-10 pr-3 text-base placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900 dark:placeholder:text-slate-500"
+              />
+            </div>
+            <button
+              id="btn-sort"
+              type="button"
+              aria-label="Change sort order"
+              class="flex size-12 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition active:scale-95 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+            >
+              <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M3 5.75A.75.75 0 0 1 3.75 5h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 5.75ZM3 10a.75.75 0 0 1 .75-.75h8.5a.75.75 0 0 1 0 1.5h-8.5A.75.75 0 0 1 3 10Zm0 4.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Tag filter chips, populated at runtime -->
+          <div id="tag-bar" class="-mx-4 mt-3 hidden gap-2 overflow-x-auto px-4 pb-1"></div>
+        </header>
+
+        <div id="card-list" class="space-y-3 px-4 py-4"></div>
+
+        <!-- Empty states -->
+        <div id="empty-none" class="hidden px-8 py-20 text-center">
+          <div class="mx-auto flex size-16 items-center justify-center rounded-2xl bg-indigo-100 dark:bg-indigo-500/15">
+            <svg class="size-8 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+            </svg>
+          </div>
+          <h2 class="mt-5 text-lg font-semibold">No cards yet</h2>
+          <p class="mx-auto mt-2 max-w-xs text-sm text-slate-500 dark:text-slate-400">
+            Add your first card, or import a file you exported from another browser.
+          </p>
+          <button id="empty-add" type="button" class="mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-indigo-600 px-5 font-medium text-white transition active:scale-95 hover:bg-indigo-700">
+            <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+            Add a card
+          </button>
+        </div>
+
+        <div id="empty-search" class="hidden px-8 py-20 text-center">
+          <h2 class="text-lg font-semibold">No matches</h2>
+          <p class="mx-auto mt-2 max-w-xs text-sm text-slate-500 dark:text-slate-400">
+            Nothing matched your search or tag filter.
+          </p>
+          <button id="empty-clear" type="button" class="mt-6 inline-flex min-h-12 items-center rounded-xl border border-slate-300 px-5 font-medium transition active:scale-95 dark:border-slate-700">
+            Clear filters
+          </button>
+        </div>
+      </main>
+
+      <!-- ══ STUDY VIEW ══════════════════════════════════════════════ -->
+      <main id="view-study" class="hidden flex-1 flex-col pb-28">
+        <header class="flex items-center justify-between gap-3 border-b border-slate-200 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 dark:border-slate-800">
+          <h1 class="text-2xl font-semibold tracking-tight">Study</h1>
+          <div class="flex items-center gap-2">
+            <span id="study-progress" class="text-sm tabular-nums text-slate-500 dark:text-slate-400"></span>
+            <button id="btn-shuffle" type="button" aria-label="Shuffle and restart" class="flex size-11 items-center justify-center rounded-xl border border-slate-300 text-slate-600 transition active:scale-95 dark:border-slate-700 dark:text-slate-300">
+              <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 4.5 21 9m0 0-4.5 4.5M21 9H3m4.5 6L3 19.5m0 0L7.5 24M3 19.5h18" transform="translate(0 -2)" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div id="study-tag-bar" class="-mx-0 flex gap-2 overflow-x-auto border-b border-slate-200 px-4 py-3 dark:border-slate-800"></div>
+
+        <!-- Tap-to-reveal card -->
+        <div class="flex flex-1 flex-col px-4 py-5">
+          <button
+            id="study-card"
+            type="button"
+            aria-live="polite"
+            class="flex w-full flex-1 flex-col justify-center gap-5 rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm transition active:scale-[0.99] dark:border-slate-800 dark:bg-slate-900"
+          >
+            <p id="study-front" class="whitespace-pre-wrap break-words break-all text-center text-2xl font-semibold leading-snug"></p>
+
+            <p id="study-hint" class="text-center text-sm text-slate-400 dark:text-slate-500">Tap to reveal</p>
+
+            <div id="study-back-wrap" class="hidden border-t border-slate-200 pt-5 dark:border-slate-800">
+              <p id="study-back" class="whitespace-pre-wrap break-words break-all text-lg leading-relaxed text-slate-700 dark:text-slate-300"></p>
+              <div id="study-tags" class="mt-4 flex flex-wrap gap-1.5"></div>
+            </div>
+          </button>
+
+          <div class="mt-4 flex gap-3">
+            <button id="btn-prev" type="button" class="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-300 font-medium transition active:scale-95 disabled:opacity-40 dark:border-slate-700">
+              <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" /></svg>
+              Prev
+            </button>
+            <button id="btn-next" type="button" class="flex min-h-14 flex-[1.6] items-center justify-center gap-2 rounded-xl bg-indigo-600 font-medium text-white transition active:scale-95 hover:bg-indigo-700 disabled:opacity-40">
+              Next
+              <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 1 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="study-empty" class="hidden px-8 py-20 text-center">
+          <h2 class="text-lg font-semibold">Nothing to study</h2>
+          <p class="mx-auto mt-2 max-w-xs text-sm text-slate-500 dark:text-slate-400">
+            Add some cards first, or pick a different tag.
+          </p>
+        </div>
+      </main>
+
+      <!-- ══ DATA VIEW ═══════════════════════════════════════════════ -->
+      <main id="view-data" class="hidden flex-1 pb-28">
+        <header class="border-b border-slate-200 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 dark:border-slate-800">
+          <h1 class="text-2xl font-semibold tracking-tight">Data</h1>
+        </header>
+
+        <div class="space-y-6 px-4 py-5">
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="font-semibold">Your library</h2>
+            <p id="data-summary" class="mt-1 text-sm text-slate-500 dark:text-slate-400"></p>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="font-semibold">Export</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Download all cards as a JSON file. Keep it as a backup, or import it into another browser.
+            </p>
+            <button id="btn-export" type="button" class="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 font-medium text-white transition active:scale-95 hover:bg-indigo-700">
+              <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.19L6.28 7.97a.75.75 0 0 0-1.06 1.06l4.25 4.25a.75.75 0 0 0 1.06 0l4.25-4.25a.75.75 0 1 0-1.06-1.06l-2.97 2.97V2.75Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>
+              Export cards
+            </button>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="font-semibold">Import</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Choose a previously exported file. You'll pick whether to merge it with your cards or replace them.
+            </p>
+            <input id="import-file" type="file" accept="application/json,.json" class="sr-only" />
+            <button id="btn-import" type="button" class="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 font-medium transition active:scale-95 dark:border-slate-700">
+              <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.25 13.25a.75.75 0 0 0 1.5 0V4.66l2.97 2.97a.75.75 0 1 0 1.06-1.06l-4.25-4.25a.75.75 0 0 0-1.06 0L5.22 6.57a.75.75 0 0 0 1.06 1.06l2.97-2.97v8.59Z" /><path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" /></svg>
+              Choose file…
+            </button>
+          </section>
+
+          <section class="rounded-2xl border border-red-200 bg-white p-5 dark:border-red-900/50 dark:bg-slate-900">
+            <h2 class="font-semibold text-red-700 dark:text-red-400">Delete everything</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Permanently removes all cards from this browser. Export first if you might want them back.
+            </p>
+            <button id="btn-clear" type="button" class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-red-300 px-5 font-medium text-red-700 transition active:scale-95 dark:border-red-900/70 dark:text-red-400">
+              Delete all cards
+            </button>
+          </section>
+
+          <p class="pb-4 text-center text-xs text-slate-400 dark:text-slate-600">
+            Cards are stored only in this browser. Nothing is uploaded anywhere.
+          </p>
+        </div>
+      </main>
+
+      <!-- ══ BOTTOM NAV ══════════════════════════════════════════════ -->
+      <nav class="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+        <div class="mx-auto flex max-w-2xl items-stretch">
+          <button data-nav="list" type="button" class="nav-btn">
+            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
+            <span>Cards</span>
+          </button>
+
+          <div class="flex items-center px-1">
+            <button id="btn-add" type="button" aria-label="Add a card" class="flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/25 transition active:scale-95 hover:bg-indigo-700">
+              <svg class="size-7" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+            </button>
+          </div>
+
+          <button data-nav="study" type="button" class="nav-btn">
+            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
+            <span>Study</span>
+          </button>
+
+          <button data-nav="data" type="button" class="nav-btn">
+            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75" /></svg>
+            <span>Data</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <!-- ══ EDITOR SHEET ══════════════════════════════════════════════ -->
+    <div id="sheet-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"></div>
+
+    <div
+      id="sheet"
+      class="fixed inset-x-0 bottom-0 z-40 hidden max-h-[92dvh] translate-y-full overflow-y-auto rounded-t-3xl bg-white pb-[max(1.25rem,env(safe-area-inset-bottom))] transition-transform duration-200 ease-out dark:bg-slate-900"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheet-title"
+    >
+      <div class="mx-auto max-w-2xl">
+        <div class="sticky top-0 flex items-center justify-between gap-3 rounded-t-3xl border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+          <button id="sheet-cancel" type="button" class="min-h-11 rounded-lg px-2 font-medium text-slate-500 dark:text-slate-400">Cancel</button>
+          <h2 id="sheet-title" class="font-semibold">Add card</h2>
+          <button id="sheet-save" type="submit" form="card-form" class="min-h-11 rounded-lg px-2 font-semibold text-indigo-600 disabled:opacity-40 dark:text-indigo-400">Save</button>
+        </div>
+
+        <form id="card-form" class="space-y-5 px-4 py-5" novalidate>
+          <div>
+            <label for="field-front" class="block text-sm font-medium">Prompt</label>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">The word or sentence you want to be asked.</p>
+            <textarea
+              id="field-front"
+              rows="2"
+              required
+              autocapitalize="sentences"
+              class="mt-2 w-full resize-y rounded-xl border border-slate-300 bg-white px-3 py-3 text-base leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950"
+            ></textarea>
+            <p id="front-error" class="mt-1.5 hidden text-sm text-red-600 dark:text-red-400">Please enter a prompt.</p>
+          </div>
+
+          <div>
+            <label for="field-back" class="block text-sm font-medium">Details</label>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">What you want to remember.</p>
+            <textarea
+              id="field-back"
+              rows="6"
+              autocapitalize="sentences"
+              class="mt-2 w-full resize-y rounded-xl border border-slate-300 bg-white px-3 py-3 text-base leading-relaxed focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="field-tags" class="block text-sm font-medium">Tags <span class="font-normal text-slate-400">(optional)</span></label>
+            <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Separate with commas, e.g. <span class="font-mono">spanish, verbs</span></p>
+            <input
+              id="field-tags"
+              type="text"
+              autocapitalize="none"
+              autocomplete="off"
+              class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950"
+            />
+          </div>
+
+          <button
+            id="sheet-delete"
+            type="button"
+            class="hidden min-h-12 w-full items-center justify-center rounded-xl border border-red-300 px-5 font-medium text-red-700 transition active:scale-95 dark:border-red-900/70 dark:text-red-400"
+          >
+            Delete this card
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ══ CONFIRM / CHOICE DIALOG ═══════════════════════════════════ -->
+    <div id="confirm-backdrop" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 p-5 backdrop-blur-sm dark:bg-slate-950/70">
+      <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h2 id="confirm-title" class="text-lg font-semibold"></h2>
+        <p id="confirm-body" class="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-slate-300"></p>
+        <div id="confirm-actions" class="mt-5 flex flex-col gap-2"></div>
+      </div>
+    </div>
+
+    <!-- ══ TOAST ═════════════════════════════════════════════════════ -->
+    <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-28 z-50 flex justify-center px-4 opacity-0 transition-opacity duration-200">
+      <p id="toast-text" class="max-w-sm rounded-xl bg-slate-900 px-4 py-3 text-center text-sm text-white shadow-lg dark:bg-slate-100 dark:text-slate-900"></p>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

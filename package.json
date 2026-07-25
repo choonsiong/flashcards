@@ -1,0 +1,15 @@
+{
+  "name": "flashcard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A mobile-first offline flashcard app. Static files only.",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./styles.css --minify",
+    "dev": "tailwindcss -i ./src/input.css -o ./styles.css --watch",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.14",
+    "tailwindcss": "^4.1.14"
+  }
+}
