@@ -7,7 +7,21 @@
 @source '../app.js';
 @source '../ui.js';
 
+/* Drive `dark:` from a class on <html> rather than the default
+   `prefers-color-scheme` media query, so the in-app theme setting can override
+   the OS. theme.js owns that class; "system" simply mirrors the media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
+  /* Render native controls, scrollbars, and carets to match the chosen theme. */
+  :root {
+    color-scheme: light;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+  }
+
   /* Stop iOS Safari from zooming in when a form field is focused, and keep
      long words from overflowing the narrow mobile layout. */
   input,
@@ -41,5 +55,15 @@
 
   .nav-btn-active {
     @apply text-indigo-600 dark:text-indigo-400;
+  }
+
+  /* Theme picker segment (Light / Dark / System) */
+  .theme-btn {
+    @apply flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300
+           text-sm font-medium transition active:scale-95 dark:border-slate-700;
+  }
+
+  .theme-btn-active {
+    @apply border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-600;
   }
 }

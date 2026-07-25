@@ -33,16 +33,18 @@ must be added as an `@source` line or its classes will silently not compile.
 
 ## Architecture
 
-Four ES modules, loaded natively via `<script type="module">`. No framework.
+Five ES modules, loaded natively via `<script type="module">`. No framework.
 
-`store.js`, `filter.js`, and `ui.js` import nothing — `app.js` is their only
-consumer. Keep it that way; the dependency graph is deliberately a star.
+`store.js`, `filter.js`, `ui.js`, and `theme.js` import nothing — `app.js` is
+their only consumer. Keep it that way; the dependency graph is deliberately a
+star.
 
 | Module | Responsibility |
 | --- | --- |
 | `store.js` | Card state, localStorage, validation, import/export. Owns the schema. |
 | `filter.js` | Pure search/sort/shuffle. No DOM, no storage. |
 | `ui.js` | Toast, bottom sheet, promise-based dialogs, focus trapping. No app logic. |
+| `theme.js` | Light/dark/system preference, its persistence, and the `dark` class. |
 | `app.js` | View switching, rendering, event wiring. The only module that knows about both data and DOM. |
 
 ### Rendering model
@@ -69,10 +71,35 @@ Card content is arbitrary user text. All of it reaches the DOM via `textContent`
 or `createElement`. Introducing `innerHTML` for card fields would make stored
 text executable.
 
+### Night mode is class-based, and applied twice
+
+`src/input.css` redefines the `dark:` variant with `@custom-variant dark
+(&:where(.dark, .dark *))`, so dark styling keys off a `dark` class on `<html>`
+rather than `prefers-color-scheme`. Without that class nothing is dark — the
+media query alone no longer has any effect.
+
+`theme.js` owns the class. The stored preference is `light`, `dark`, or
+`system`; `system` mirrors the media query and stays live via a `change`
+listener.
+
+Two controls edit it: the header button in the list view (a straight flip to
+the opposite of what is on screen, which leaves `system` behind) and the
+three-way picker in Data → Appearance. Both render from a `theme.js`
+subscription rather than from `renderAll`, because an OS appearance change
+while the preference is `system` has to update the header icon as well as the
+colours, and no store mutation occurs to trigger a normal re-render.
+
+The inline `<script>` in `index.html`'s `<head>` **deliberately duplicates** the
+storage key and the resolution rule, because `app.js` is a module and therefore
+deferred — too late to prevent a flash of light theme. Change the two together.
+Both also set the single `<meta name="theme-color">`, which for the same reason
+cannot use the `media="(prefers-color-scheme: …)"` pair.
+
 ### Data format and storage keys
 
 `localStorage['flashcard.data.v1']` holds `{ version, cards[] }`;
-`flashcard.sort.v1` holds the sort preference. Cards are
+`flashcard.sort.v1` holds the sort preference and `flashcard.theme.v1` the
+theme. Cards are
 `{ id, front, back, tags[], createdAt, updatedAt }` — `front` is the prompt,
 `back` is the details.
 

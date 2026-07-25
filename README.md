@@ -13,7 +13,8 @@ No accounts, no server, no tracking. Just static files.
 - Study mode: tap to reveal, shuffle, filter by tag, arrow-key navigation on desktop
 - Export to JSON, import with **merge** or **replace**
 - Works offline once loaded; installable to your home screen
-- Light and dark themes, following your system setting
+- Night mode: one-tap toggle in the header, or **Light** / **Dark** / **System**
+  under **Data → Appearance**
 
 ## Running locally
 
@@ -66,6 +67,7 @@ in the other browser choose **Data → Choose file…**:
 | `store.js` | Data model, localStorage, import/export |
 | `filter.js` | Search, sort and shuffle helpers |
 | `ui.js` | Toasts, bottom sheet, modal dialogs |
+| `theme.js` | Light/dark/system preference |
 | `src/input.css` | Tailwind source |
 | `styles.css` | Built CSS (committed) |
 
