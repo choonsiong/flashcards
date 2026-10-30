@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "A mobile-first offline flashcard app. Static files only.",
+  "license": "MIT",
   "scripts": {
     "build": "tailwindcss -i ./src/input.css -o ./styles.css --minify",
     "dev": "tailwindcss -i ./src/input.css -o ./styles.css --watch",
