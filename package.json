@@ -1,5 +1,5 @@
 {
-  "name": "flashcard",
+  "name": "flashcards",
   "version": "1.0.0",
   "private": true,
   "description": "A mobile-first offline flashcard app. Static files only.",
