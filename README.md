@@ -48,6 +48,15 @@ if you forget.
 The app uses only relative paths, so it works from a project subpath such as
 `https://<user>.github.io/flashcard/`.
 
+## Releases
+
+After a pull request is merged, `main` is tagged with the next `vX.Y.Z`. Pushing
+the tag runs `.github/workflows/release.yml`, which publishes a GitHub release
+with generated notes, and fails if the tag is not on `main`.
+
+A release only records a version. The site is deployed by the push to `main`,
+not by the tag.
+
 ## Moving data between browsers
 
 Open **Data → Export cards** to download a `flashcards-YYYY-MM-DD.json` file, then
