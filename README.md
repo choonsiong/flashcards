@@ -107,3 +107,7 @@ file from a newer app version is rejected with an explanation.
 Cards are stored per browser, per device — clearing site data removes them, so
 export occasionally if the cards matter. If storage is unavailable (Safari private
 browsing) or full, a warning appears instead of silently losing a change.
+
+## License
+
+[MIT](LICENSE)
