@@ -124,8 +124,9 @@ these properties when touching that function.
 
 `.github/workflows/pages.yml` deploys `main` to GitHub Pages (Settings → Pages →
 Source: GitHub Actions). All asset paths are relative, so the app works from a
-project subpath like `https://<user>.github.io/flashcard/`. `.nojekyll` stops
-Jekyll from processing the tree.
+project subpath like `https://<user>.github.io/flashcards/`. `.nojekyll` stops
+Jekyll from processing the tree. The workflow uploads the repo root, so it
+deletes `node_modules` after building to keep it off the live site.
 
 `.gitignore` excludes `flashcards-*.json` so exported personal card data is not
 committed to a public repo.

@@ -46,7 +46,7 @@ if you forget.
 3. Push to `main`. The workflow in `.github/workflows/pages.yml` builds and deploys.
 
 The app uses only relative paths, so it works from a project subpath such as
-`https://<user>.github.io/flashcard/`.
+`https://<user>.github.io/flashcards/`.
 
 ## Releases
 
