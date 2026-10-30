@@ -129,3 +129,10 @@ Jekyll from processing the tree.
 
 `.gitignore` excludes `flashcards-*.json` so exported personal card data is not
 committed to a public repo.
+
+## Releases
+
+`main` is tagged with the next `vX.Y.Z` after each merged pull request.
+`.github/workflows/release.yml` turns each pushed tag into a GitHub release with
+generated notes, and fails on a tag that is not on `main`. It builds and attaches
+nothing, and `pages.yml` runs on pushes to `main` only, so a tag never deploys.
